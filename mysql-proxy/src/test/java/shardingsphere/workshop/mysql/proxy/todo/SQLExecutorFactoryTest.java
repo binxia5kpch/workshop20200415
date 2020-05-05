@@ -4,8 +4,12 @@ import org.junit.Before;
 import org.junit.Test;
 import shardingsphere.workshop.mysql.proxy.todo.executor.SQLExecutor;
 import shardingsphere.workshop.mysql.proxy.todo.executor.entity.DataBaseEntity;
+import shardingsphere.workshop.mysql.proxy.todo.executor.entity.MetaDataEntity;
 import shardingsphere.workshop.mysql.proxy.todo.executor.entity.TableEntity;
 import shardingsphere.workshop.parser.engine.ParseEngine;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -45,7 +49,6 @@ public class SQLExecutorFactoryTest {
         SQLExecutor sqlExecutor = SQLExecutorFactory.newInstance(ParseEngine.parse(sql),sql);
         //执行
         sqlExecutor.execute(null);
-        tableEntity.getTableInfo().get("id").getMetaDataEntityList().size();
     }
 
     @Test
@@ -55,7 +58,24 @@ public class SQLExecutorFactoryTest {
         SQLExecutor sqlExecutor = SQLExecutorFactory.newInstance(ParseEngine.parse(sql),sql);
         //执行
         sqlExecutor.execute(null);
-        tableEntity.getTableInfo().get("id").getMetaDataEntityList();
+        List<Integer> rowNums = new ArrayList<>();
+        for(MetaDataEntity idMeta : tableEntity.getTableInfo().get("id").getMetaDataEntityList()){
+            if("1".equals(idMeta.getValue())){
+                rowNums.add(idMeta.getRowNum());
+            }
+        }
+        //测试修改列user_name
+        for(MetaDataEntity userNameMeta : tableEntity.getTableInfo().get("user_name").getMetaDataEntityList()){
+            if(rowNums.contains(userNameMeta.getRowNum())){
+                assertThat(userNameMeta.getValue(),is("zhangsan"));
+            }
+        }
+        //测试修改列mobile
+        for(MetaDataEntity userNameMeta : tableEntity.getTableInfo().get("mobile").getMetaDataEntityList()){
+            if(rowNums.contains(userNameMeta.getRowNum())){
+                assertThat(userNameMeta.getValue(),is("132"));
+            }
+        }
     }
 
     @Test
@@ -65,7 +85,7 @@ public class SQLExecutorFactoryTest {
         SQLExecutor sqlExecutor = SQLExecutorFactory.newInstance(ParseEngine.parse(sql),sql);
         //执行
         sqlExecutor.execute(null);
-        //校验表中数据是否满足行数
+        //校验表中数据是否满足行数(这里是可以支持多行删除的，只是现在条件是只有一行)
         assertThat(tableEntity.getTableInfo().get("id").getMetaDataEntityList().size(),is(initDataRow-1));
     }
 }

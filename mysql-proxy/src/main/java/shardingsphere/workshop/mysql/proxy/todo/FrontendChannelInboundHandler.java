@@ -12,10 +12,12 @@ import shardingsphere.workshop.mysql.proxy.fixture.MySQLAuthenticationHandler;
 import shardingsphere.workshop.mysql.proxy.fixture.packet.MySQLErrPacketFactory;
 import shardingsphere.workshop.mysql.proxy.fixture.packet.MySQLPacketPayload;
 import shardingsphere.workshop.mysql.proxy.fixture.packet.constant.MySQLColumnType;
+import shardingsphere.workshop.mysql.proxy.todo.executor.SQLExecutor;
 import shardingsphere.workshop.mysql.proxy.todo.packet.MySQLEofPacket;
 import shardingsphere.workshop.mysql.proxy.todo.packet.MySQLColumnDefinition41Packet;
 import shardingsphere.workshop.mysql.proxy.todo.packet.MySQLFieldCountPacket;
 import shardingsphere.workshop.mysql.proxy.todo.packet.MySQLTextResultSetRowPacket;
+import shardingsphere.workshop.parser.engine.ParseEngine;
 
 /**
  * Frontend channel inbound handler.
@@ -63,15 +65,39 @@ public final class FrontendChannelInboundHandler extends ChannelInboundHandlerAd
     }
     
     private void executeCommand(final ChannelHandlerContext context, final MySQLPacketPayload payload) {
-        Preconditions.checkState(0x03 == payload.readInt1(), "only support COM_QUERY command type");
-        // TODO 1. Read SQL from payload, then system.out it
-        // TODO 2. Return mock MySQLPacket to client (header: MySQLFieldCountPacket + MySQLColumnDefinition41Packet + MySQLEofPacket, content: MySQLTextResultSetRowPacket
-        // TODO 3. Parse SQL, return actual data according to SQLStatement
-        context.write(new MySQLFieldCountPacket(1, 1));
-        context.write(new MySQLColumnDefinition41Packet(2, 0, "sharding_db", "t_order", "t_order", "order_id", "order_id", 100, MySQLColumnType.MYSQL_TYPE_STRING,0));
-        context.write(new MySQLEofPacket(3));
-        context.write(new MySQLTextResultSetRowPacket(4, ImmutableList.of(100)));
-        context.write(new MySQLEofPacket(5));
-        context.flush();
+        try {
+            //检查sql 是否合法
+            checkSql(context,payload);
+            //执行sql
+            executeSql(context,payload);
+        }catch (final Exception ex) {
+            throw ex;
+        }finally {
+            context.flush();
+        }
+    }
+
+
+    /**
+     * 检查sql
+     * @param context
+     * @param payload
+     */
+    private void checkSql(ChannelHandlerContext context, MySQLPacketPayload payload) {
+        CheckSqlAndParam.checkSql(context,payload);
+    }
+
+    /**
+     * 执行sql
+     * @param context
+     * @param payload
+     */
+    private void executeSql(ChannelHandlerContext context, MySQLPacketPayload payload) {
+        //获取sql
+        String sql = payload.readStringEOF();
+        //获取执行器
+        SQLExecutor sqlExecutor = SQLExecutorFactory.newInstance(ParseEngine.parse(sql),sql);
+        //执行
+        sqlExecutor.execute(context);
     }
 }

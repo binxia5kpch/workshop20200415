@@ -18,6 +18,18 @@ SELECT
     : S E L E C T
     ;
 
+DELETE
+     : D E L E T E
+     ;
+
+UPDATE
+     : U P D A T E
+     ;
+
+SET
+   : S E T
+   ;
+
 TABLE
     : T A B L E
     ;

@@ -44,17 +44,20 @@ public final class MySQLColumnDefinition41Packet implements MySQLPacket {
     
     public MySQLColumnDefinition41Packet(final int sequenceId, final int flags, final String schema, final String table, final String orgTable,
                                          final String name, final String orgName, final int columnLength, final MySQLColumnType columnType, final int decimals) {
+        /**
+         * 包的序号，表示第几个包
+         */
         this.sequenceId = sequenceId;
         this.characterSet = MySQLServerInfo.CHARSET;
-        this.flags = flags;
-        this.schema = schema;
-        this.table = table;
-        this.orgTable = orgTable;
-        this.name = name;
-        this.orgName = orgName;
-        this.columnLength = columnLength;
-        this.columnType = columnType;
-        this.decimals = decimals;
+        this.flags = flags; //默认值0
+        this.schema = schema;  //数据库名
+        this.table = table;    //表名（别名）
+        this.orgTable = orgTable;  //原始表名
+        this.name = name;    //列名
+        this.orgName = orgName;  //原始列名
+        this.columnLength = columnLength;  //列的长度
+        this.columnType = columnType;   //列的类型
+        this.decimals = decimals;   //是否是浮点型
     }
     
     @Override

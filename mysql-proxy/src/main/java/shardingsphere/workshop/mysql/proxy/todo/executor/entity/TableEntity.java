@@ -36,7 +36,7 @@ public class TableEntity {
     private final String schemaName;
 
     /**
-     * 表数据行数
+     * 表数据行数,这里行号设计的更像id 目前只能增加不能减少，delete的时候不能删删了会有问题
      */
     private final AtomicInteger rowNum = new AtomicInteger();
 

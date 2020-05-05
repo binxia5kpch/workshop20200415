@@ -38,6 +38,7 @@ public class InsertSqlExecutor extends CommonSQLExecutor {
             Map<String,String> kvMap = (Map<String,String>)tempMap.get("kvMap");
             //整合一个列名的集合方便查找
             List<String> columnsList = (List<String>)tempMap.get("columnsList");
+
             //遍历表结构的所有表字段，有插入值的设置相应的值没有的设置null
             for(String key : tableEntity.getTableInfo().keySet()){
                 ColumnEntity valueList = tableEntity.getTableInfo().get(key);
@@ -45,17 +46,18 @@ public class InsertSqlExecutor extends CommonSQLExecutor {
                 //如果插入有这列
                 if(columnsList.contains(key)){
                     //表数据填充，且表数据行号递增
-                    MetaDataEntity metaDataEntity = new MetaDataEntity(kvMap.get(key),tableEntity.incrementRowNum(),key);
+                    MetaDataEntity metaDataEntity = new MetaDataEntity(kvMap.get(key),tableEntity.getRowNum(),key);
                     metaDataEntityList.add(metaDataEntity);
                 }else {//
                     //如果没有则表数据插入null，且表数据行号递增
-                    MetaDataEntity metaDataEntity = new MetaDataEntity(null,tableEntity.incrementRowNum(),key);
+                    MetaDataEntity metaDataEntity = new MetaDataEntity(null,tableEntity.getRowNum(),key);
                     metaDataEntityList.add(metaDataEntity);
                 }
             }
             //插入完毕组织返回值
             processRetData(context,tableEntity);
         }catch (Exception e){
+            e.printStackTrace();
             createErrorPacket(e);
         }
     }
@@ -70,6 +72,8 @@ public class InsertSqlExecutor extends CommonSQLExecutor {
      * @param tableEntity
      */
     private Map<String,Object> processData(InsertStatement insertStatement, TableEntity tableEntity) {
+        //因为目前只支持单个插入还不支持批量插入所以表行数直接这里加1
+        tableEntity.incrementRowNum();
         //最终需要返回的信息
         Map<String,Object> retMap = new HashMap<>();
         //整合一个列名和值的对应关系

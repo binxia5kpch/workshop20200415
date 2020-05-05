@@ -50,6 +50,7 @@ public class DeleteSqlExecutor extends CommonSQLExecutor {
             //删除完毕组织返回值
             processRetData(context,tableEntity);
         }catch (Exception e){
+            e.printStackTrace();
             createErrorPacket(e);
         }
     }
@@ -67,18 +68,18 @@ public class DeleteSqlExecutor extends CommonSQLExecutor {
         //最终需要返回的信息
         Map<String,Object> retMap = new HashMap<>();
         //通过where条件找到行号
-        List<Integer> rowsNum = new ArrayList<>();
+        List<Integer> rowsNums = new ArrayList<>();
         ColumnEntity columnEntity = tableEntity.getTableInfo().get(deleteStatement.getWhereConditions().getColumnName().getIdentifier().getValue());
         for(MetaDataEntity metaDataEntity: columnEntity.getMetaDataEntityList()){
             //如果取出来的值和where条件的值相当则记录行号
             if(metaDataEntity.getValue().equals(deleteStatement.getWhereConditions().getAssignmentValue().getIdentifier().getValue())){
-                rowsNum.add(metaDataEntity.getRowNum());
+                rowsNums.add(metaDataEntity.getRowNum());
             }
         }
         /***
          * 处理各种逻辑。。。。。
          */
-        retMap.put("rowsNum",rowsNum);
+        retMap.put("rowNums",rowsNums);
         return retMap;
     }
 
